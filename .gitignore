@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+data/
+artifacts/*.pt
+artifacts/*.onnx
+*.log
+.env
+wandb/
+.pytest_cache/
+.ruff_cache/

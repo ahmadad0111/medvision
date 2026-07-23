@@ -1,0 +1,27 @@
+# --- core DL ---
+torch
+torchvision
+timm
+
+# --- medical dataset ---
+medmnist
+
+# --- explainability / imaging ---
+pillow
+opencv-python-headless
+scikit-learn
+
+# --- export & inference optimisation ---
+onnx
+onnxruntime
+
+# --- serving ---
+fastapi
+uvicorn[standard]
+python-multipart
+
+# --- experiment tracking (optional) ---
+wandb
+
+# --- dev ---
+pytest
