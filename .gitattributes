@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.sh text eol=lf
+*.svg text eol=lf
+*.png binary
+*.pt binary
+*.onnx binary
+*.bundle binary
