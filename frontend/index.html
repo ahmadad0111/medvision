@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MedVision — Explainable Skin-Lesion Classifier</title>
+<style>
+  :root{--bg:#0b1120;--panel:#111a2e;--panel2:#0f1728;--border:#1e2b45;
+    --text:#e8eefc;--muted:#8b9ac0;--accent:#5b8cff;--accent2:#7c5cff;--ok:#22c55e;--warn:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif;
+    background:var(--bg);color:var(--text)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;
+    border-bottom:1px solid var(--border);background:var(--panel2)}
+  .brand{font-weight:800;font-size:1.1rem}.brand span{color:var(--accent)}
+  .status{font-size:.8rem;color:var(--muted);display:flex;gap:8px;align-items:center}
+  .dot{width:9px;height:9px;border-radius:50%;background:#ef4444}
+  .dot.ok{background:var(--ok);box-shadow:0 0 0 4px rgba(34,197,94,.15)}
+  main{max-width:1000px;margin:0 auto;padding:28px 22px}
+  .disclaimer{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);
+    color:#f7d38a;border-radius:10px;padding:10px 14px;font-size:.82rem;margin-bottom:22px}
+  .upload{border:1.6px dashed var(--border);border-radius:16px;padding:34px;text-align:center;
+    cursor:pointer;transition:.2s;color:var(--muted)}
+  .upload:hover{border-color:var(--accent);color:var(--text)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px}
+  .card h3{margin:0 0 12px;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .imgbox{aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--panel2);
+    display:flex;align-items:center;justify-content:center}
+  .imgbox img{width:100%;height:100%;object-fit:contain}
+  .pred{font-size:1.35rem;font-weight:800;margin:4px 0}
+  .pred small{color:var(--muted);font-weight:500;font-size:.9rem}
+  .bar{margin:9px 0}
+  .bar .lab{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:4px}
+  .bar .lab b{color:var(--muted);font-weight:500}
+  .track{height:8px;background:var(--panel2);border-radius:999px;overflow:hidden}
+  .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  .muted{color:var(--muted);font-size:.85rem}
+  button.send{margin-top:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;border:none;border-radius:12px;padding:11px 20px;font-weight:700;cursor:pointer}
+  button.send:disabled{opacity:.5}
+  .legend{font-size:.75rem;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Med<span>Vision</span> — Explainable Skin-Lesion Classifier</div>
+  <div class="status"><span class="dot" id="dot"></span><span id="stat">connecting…</span></div>
+</header>
+<main>
+  <div class="disclaimer">Research/education demo only — not a medical device and not for diagnosis. Trained on the public DermaMNIST dataset.</div>
+
+  <label class="upload" id="drop">
+    <input type="file" id="file" accept="image/*" hidden />
+    <strong>Upload a dermatoscopic image</strong><br />
+    <span>click or drop a PNG/JPG</span>
+  </label>
+  <div style="text-align:center"><button class="send" id="go" disabled>Classify</button></div>
+
+  <div class="grid" id="results" style="display:none">
+    <div class="card">
+      <h3>Input</h3>
+      <div class="imgbox"><img id="inimg" alt="input" /></div>
+    </div>
+    <div class="card">
+      <h3>Grad-CAM explanation</h3>
+      <div class="imgbox"><img id="camimg" alt="grad-cam" /></div>
+      <div class="legend">Warmer regions contributed most to the prediction.</div>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <h3>Prediction</h3>
+      <div class="pred" id="pred">—</div>
+      <div id="bars"></div>
+      <div class="muted" id="lat"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const API=(location.port==="8000"||location.protocol==="file:")?"http://localhost:8000":"";
+const $=s=>document.querySelector(s);
+let currentFile=null;
+
+async function health(){try{const r=await fetch(API+"/health");if(r.ok){
+  $("#dot").classList.add("ok");$("#stat").textContent="model ready";}}catch(e){$("#stat").textContent="API offline";}}
+
+const drop=$("#drop"),file=$("#file");
+drop.onclick=()=>file.click();
+file.onchange=()=>pick(file.files[0]);
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor="var(--accent)";}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor="";}));
+drop.addEventListener("drop",e=>{if(e.dataTransfer.files[0])pick(e.dataTransfer.files[0]);});
+
+function pick(f){if(!f)return;currentFile=f;$("#go").disabled=false;
+  const url=URL.createObjectURL(f);$("#inimg").src=url;$("#results").style.display="grid";
+  $("#camimg").src="";$("#pred").textContent="—";$("#bars").innerHTML="";$("#lat").textContent="";}
+
+$("#go").onclick=async()=>{
+  if(!currentFile)return;$("#go").disabled=true;$("#pred").textContent="Analyzing…";
+  const fd=new FormData();fd.append("file",currentFile);
+  try{
+    const r=await fetch(API+"/predict?explain=true",{method:"POST",body:fd});
+    const d=await r.json();
+    if(!r.ok){$("#pred").textContent="Error: "+(d.detail||"failed");$("#go").disabled=false;return;}
+    $("#pred").innerHTML=`${d.prediction.label} <small>(${(d.prediction.prob*100).toFixed(1)}%)</small>`;
+    $("#bars").innerHTML=d.top_k.map(t=>`
+      <div class="bar"><div class="lab"><span>${t.label}</span><b>${(t.prob*100).toFixed(1)}%</b></div>
+      <div class="track"><div class="fill" style="width:${(t.prob*100).toFixed(1)}%"></div></div></div>`).join("");
+    if(d.gradcam_png_base64)$("#camimg").src=d.gradcam_png_base64;
+    $("#lat").textContent=d.latency_ms?`Inference: ${d.latency_ms} ms`:"";
+  }catch(e){$("#pred").textContent="Could not reach the API on :8000.";}
+  $("#go").disabled=false;
+};
+health();setInterval(health,15000);
+</script>
+</body>
+</html>
