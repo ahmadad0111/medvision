@@ -1,0 +1,109 @@
+# MedVision — Explainable Skin-Lesion Classifier
+
+[![CI](https://github.com/ahmadad0111/medvision/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmadad0111/medvision/actions/workflows/ci.yml)
+
+A production-grade, **explainable** medical-image classifier: it predicts one of
+7 skin-lesion types from a dermatoscopic image, shows **why** with a Grad-CAM
+heatmap, and serves predictions through an **ONNX-optimized, latency-benchmarked**
+FastAPI service with a web UI.
+
+> Research/education demo only — not a medical device, not for diagnosis.
+> Trained on the public **DermaMNIST** dataset (HAM10000-derived).
+
+What makes it more than a Kaggle notebook:
+
+- **Explainability** — Grad-CAM heatmaps for every prediction (the pixels that drove the decision).
+- **Modern backbone** — any `timm` model (default `convnext_tiny`; ViT works too) via transfer learning.
+- **Rigorous training** — class-imbalance handling (weighted loss), label smoothing, cosine schedule, and per-epoch accuracy / macro-F1 / **macro-AUROC**, with best-checkpoint selection and optional Weights & Biases.
+- **Inference optimization** — export to ONNX, INT8 quantization, and a benchmark reporting latency + model size across PyTorch / ONNX / INT8.
+- **Deployed** — FastAPI `/predict` endpoint + a streaming-free, dependency-light web UI at `/app`, containerized with Docker and covered by GitHub Actions CI.
+
+## Architecture
+
+![MedVision architecture](docs/architecture.svg)
+
+## Quick start
+
+```bash
+cp .env.example .env
+
+# 1. Train (auto-downloads DermaMNIST on first run)
+pip install -r requirements.txt
+python -m scripts.train            # writes artifacts/model.pt + artifacts/test_report.json
+
+# 2. Export to ONNX + INT8 and benchmark latency/size
+python -m scripts.export           # writes artifacts/benchmark.json
+
+# 3. Serve (Docker mounts ./artifacts so it can load your trained model)
+docker compose up --build -d
+# open http://localhost:8000/app  → upload a lesion image → prediction + Grad-CAM
+```
+
+Run the API without Docker: `uvicorn src.api.main:app --reload` (after training).
+
+## API
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/predict?explain=true` | Image upload → `{prediction, top_k, gradcam_png_base64, latency_ms}` |
+| GET | `/health`, `/version` | Health + config + label map |
+
+## Configuration
+
+Everything is env-driven — see `.env.example`. Highlights: `BACKBONE`
+(any timm model), `IMG_SIZE`, `EPOCHS`, `BATCH_SIZE`, `LR`,
+`USE_CLASS_WEIGHTS`, `USE_WANDB`, `DEVICE`.
+
+## Results
+
+Fill these in after training on your machine (the harness prints them):
+
+| Metric | Value |
+|---|---|
+| Test accuracy | _run `scripts.train`_ |
+| Test macro-F1 | _…_ |
+| Test macro-AUROC | _…_ |
+
+| Engine | Latency (ms) | Size (MB) | Speedup |
+|---|---|---|---|
+| PyTorch fp32 | _run `scripts.export`_ | | 1.00x |
+| ONNX fp32 | _…_ | | |
+| ONNX INT8 | _…_ | | |
+
+These are exactly the numbers for your resume bullets, e.g. *"cut inference
+latency X% and model size Y% via ONNX export + INT8 quantization."*
+
+## Tests
+
+```bash
+pip install pytest
+pytest -q     # pure-logic tests: metrics (acc/F1/AUROC), config, inference utils
+```
+
+## Project structure
+
+```
+src/
+  core/         config, logging, seed
+  data/         DermaMNIST pipeline (medmnist) + class weights
+  models/       timm backbone factory + Grad-CAM target detection
+  training/     trainer (weighted loss, AUROC, checkpointing) + metrics
+  explain/      Grad-CAM + heatmap overlay
+  inference/    Predictor (label, top-k, Grad-CAM)
+  export/       ONNX export, INT8 quantization, latency benchmark
+  api/          FastAPI app, routes (health, predict), schemas, DI
+scripts/        train.py, export.py, push_all_branches.sh
+frontend/       upload UI with probability bars + heatmap
+tests/          unit tests
+```
+
+## Development workflow
+
+Branch-per-feature merged into `release/v1.0`: `feature/data-model` →
+`feature/training` → `feature/explainability` → `feature/onnx-benchmark`
+→ `feature/api-ui` → `feature/ci-docs`.
+
+## Roadmap
+
+Segmentation head, test-time augmentation, calibration (temperature scaling),
+a Streamlit dashboard, and TensorRT/edge (Jetson) deployment benchmarks.
