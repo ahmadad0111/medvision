@@ -64,15 +64,23 @@ def benchmark(model, img_size: int = None, runs: int = 50):
     except Exception as exc:
         logger.warning(f"ONNX fp32 benchmark skipped: {exc}")
 
-    # 3) ONNX INT8
+    # 3) ONNX INT8 — record SIZE first (persist), then try latency separately.
+    # Quantized-op inference can hard-crash on some CPUs; the size reduction is
+    # a valid metric regardless, so we never lose it.
     try:
         quantize_int8()
-        sess8 = load_onnx_session(Config.ONNX_INT8_PATH)
-        iname8 = sess8.get_inputs()[0].name
-        rows.append({"engine": "onnx_int8",
-                     "latency_ms": _time_callable(lambda: sess8.run(None, {iname8: x_np}), runs),
-                     "size_mb": _file_mb(Config.ONNX_INT8_PATH)})
-        logger.info("Benchmarked onnx_int8"); _save(rows)
+        int8_row = {"engine": "onnx_int8", "latency_ms": None,
+                    "size_mb": _file_mb(Config.ONNX_INT8_PATH)}
+        rows.append(int8_row); _save(rows)
+        logger.info(f"Quantized INT8 size = {int8_row['size_mb']} MB")
+        try:
+            sess8 = load_onnx_session(Config.ONNX_INT8_PATH)
+            iname8 = sess8.get_inputs()[0].name
+            int8_row["latency_ms"] = _time_callable(
+                lambda: sess8.run(None, {iname8: x_np}), runs)
+            logger.info("Benchmarked onnx_int8"); _save(rows)
+        except Exception as exc:
+            logger.warning(f"INT8 latency skipped (size still recorded): {exc}")
     except Exception as exc:
         logger.warning(f"INT8 quantization skipped: {exc}")
 
