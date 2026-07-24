@@ -14,6 +14,13 @@ def _file_mb(path):
     return round(os.path.getsize(path) / (1024 * 1024), 2) if os.path.exists(path) else None
 
 
+def _save(rows):
+    import json
+    os.makedirs(Config.ARTIFACT_DIR, exist_ok=True)
+    with open(os.path.join(Config.ARTIFACT_DIR, "benchmark.json"), "w") as f:
+        json.dump(rows, f, indent=2)
+
+
 def _time_callable(fn, runs=50, warmup=10):
     for _ in range(warmup):
         fn()
@@ -41,7 +48,7 @@ def benchmark(model, img_size: int = None, runs: int = 50):
             rows.append({"engine": "pytorch_fp32",
                          "latency_ms": _time_callable(lambda: model(x_torch), runs),
                          "size_mb": _file_mb(Config.CHECKPOINT_PATH)})
-        logger.info("Benchmarked pytorch_fp32")
+        logger.info("Benchmarked pytorch_fp32"); _save(rows)
     except Exception as exc:
         logger.warning(f"PyTorch benchmark skipped: {exc}")
 
@@ -53,7 +60,7 @@ def benchmark(model, img_size: int = None, runs: int = 50):
         rows.append({"engine": "onnx_fp32",
                      "latency_ms": _time_callable(lambda: sess.run(None, {iname: x_np}), runs),
                      "size_mb": _file_mb(Config.ONNX_PATH)})
-        logger.info("Benchmarked onnx_fp32")
+        logger.info("Benchmarked onnx_fp32"); _save(rows)
     except Exception as exc:
         logger.warning(f"ONNX fp32 benchmark skipped: {exc}")
 
@@ -65,7 +72,7 @@ def benchmark(model, img_size: int = None, runs: int = 50):
         rows.append({"engine": "onnx_int8",
                      "latency_ms": _time_callable(lambda: sess8.run(None, {iname8: x_np}), runs),
                      "size_mb": _file_mb(Config.ONNX_INT8_PATH)})
-        logger.info("Benchmarked onnx_int8")
+        logger.info("Benchmarked onnx_int8"); _save(rows)
     except Exception as exc:
         logger.warning(f"INT8 quantization skipped: {exc}")
 
