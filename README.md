@@ -103,6 +103,17 @@ Branch-per-feature merged into `release/v1.0`: `feature/data-model` →
 `feature/training` → `feature/explainability` → `feature/onnx-benchmark`
 → `feature/api-ui` → `feature/ci-docs`.
 
+## Troubleshooting
+
+**`A module compiled using NumPy 1.x cannot be run in NumPy 2.x` / medmnist `RuntimeError: Failed to...`**
+Your PyTorch was built against NumPy 1.x but the env has NumPy 2. Fix:
+
+```bash
+pip install "numpy<2"
+```
+
+Then re-run `python -m scripts.train`.
+
 ## Roadmap
 
 Segmentation head, test-time augmentation, calibration (temperature scaling),
