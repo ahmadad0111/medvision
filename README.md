@@ -84,13 +84,17 @@ melanoma↔nevi boundary: 57/223 melanomas were predicted as benign nevi
 often the desirable clinical tradeoff. Full confusion matrix in
 `artifacts/test_report.json`.
 
-**Inference benchmark** (fill in after `python -m scripts.export`)
+**Inference benchmark** (CPU, 1 image, 50 runs)
 
-| Engine | Latency (ms) | Size (MB) | Speedup |
+| Engine | Latency (ms) | Size (MB) | vs PyTorch |
 |---|---|---|---|
-| PyTorch fp32 | _…_ | | 1.00x |
-| ONNX fp32 | _…_ | | |
-| ONNX INT8 | _…_ | | |
+| PyTorch fp32 | 113.5 | 106.2 | 1.0x |
+| **ONNX fp32** | **33.4** | 106.2 | **3.4x faster** |
+| ONNX INT8 | n/a* | **26.9** | **3.9x smaller** |
+
+\* INT8 *inference* is omitted — quantized ConvNeXt ops hard-crash ONNX Runtime
+on this CPU — but the INT8 export still yields a **3.9x smaller model**
+(106 → 27 MB). Exporting to ONNX alone cut CPU latency **3.4x** (113 → 33 ms).
 
 ## Tests
 
