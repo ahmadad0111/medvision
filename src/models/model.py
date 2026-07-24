@@ -14,10 +14,18 @@ def build_model(backbone: str = None, num_classes: int = None,
     backbone = backbone or Config.BACKBONE
     num_classes = num_classes or Config.NUM_CLASSES
     pretrained = Config.PRETRAINED if pretrained is None else pretrained
-    model = timm.create_model(
-        backbone, pretrained=pretrained, num_classes=num_classes,
-        drop_rate=Config.DROPOUT,
-    )
+    try:
+        model = timm.create_model(
+            backbone, pretrained=pretrained, num_classes=num_classes,
+            drop_rate=Config.DROPOUT,
+        )
+    except RuntimeError as exc:
+        raise RuntimeError(
+            f"timm could not create backbone '{backbone}': {exc}. "
+            f"Your installed timm ({getattr(timm, '__version__', '?')}) may be too old for this model. "
+            f"Fix: `pip install -U timm`, or set a backbone your version has, "
+            f"e.g. BACKBONE=resnet50 (ImageNet-pretrained and Grad-CAM friendly)."
+        ) from exc
     logger.info(f"Built {backbone} (pretrained={pretrained}, classes={num_classes})")
     return model
 

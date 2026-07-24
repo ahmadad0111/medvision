@@ -114,6 +114,14 @@ pip install "numpy<2"
 
 Then re-run `python -m scripts.train`.
 
+**`RuntimeError: Unknown model (convnext_tiny)`**
+Your `timm` is older than the requested backbone. Either upgrade (`pip install -U timm`) or use a backbone your version has:
+
+```bash
+set BACKBONE=resnet50   # Windows (use `export` on macOS/Linux)
+python -m scripts.train
+```
+
 ## Roadmap
 
 Segmentation head, test-time augmentation, calibration (temperature scaling),
