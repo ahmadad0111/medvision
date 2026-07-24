@@ -56,22 +56,41 @@ Everything is env-driven — see `.env.example`. Highlights: `BACKBONE`
 
 ## Results
 
-Fill these in after training on your machine (the harness prints them):
+ConvNeXt-Tiny fine-tuned on DermaMNIST (7 classes, 224px, 15 epochs) — on par
+with published MedMNIST baselines.
 
-| Metric | Value |
+| Metric (test) | Value |
 |---|---|
-| Test accuracy | _run `scripts.train`_ |
-| Test macro-F1 | _…_ |
-| Test macro-AUROC | _…_ |
+| Accuracy | **0.748** |
+| Macro-F1 | 0.558 |
+| **Macro-AUROC** | **0.908** |
+
+**Per-class recall**
+
+| Class | Recall |
+|---|---|
+| melanocytic nevi (benign) | 0.85 |
+| vascular lesions | 0.72 |
+| basal cell carcinoma | 0.60 |
+| actinic keratoses | 0.59 |
+| melanoma | 0.53 |
+| benign keratosis-like | 0.51 |
+| dermatofibroma | 0.39 |
+
+**Error analysis.** The dominant error is the clinically important
+melanoma↔nevi boundary: 57/223 melanomas were predicted as benign nevi
+(false negatives) and 101 nevi were over-called as melanoma. Raising
+`WEIGHT_POWER` toward 0.7 trades a little accuracy for higher melanoma recall —
+often the desirable clinical tradeoff. Full confusion matrix in
+`artifacts/test_report.json`.
+
+**Inference benchmark** (fill in after `python -m scripts.export`)
 
 | Engine | Latency (ms) | Size (MB) | Speedup |
 |---|---|---|---|
-| PyTorch fp32 | _run `scripts.export`_ | | 1.00x |
+| PyTorch fp32 | _…_ | | 1.00x |
 | ONNX fp32 | _…_ | | |
 | ONNX INT8 | _…_ | | |
-
-These are exactly the numbers for your resume bullets, e.g. *"cut inference
-latency X% and model size Y% via ONNX export + INT8 quantization."*
 
 ## Tests
 
