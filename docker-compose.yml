@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    container_name: medvision-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DEVICE: cpu
+      CHECKPOINT_PATH: artifacts/model.pt
+    volumes:
+      # mount your locally-trained model so the API can serve it
+      - ./artifacts:/app/artifacts
