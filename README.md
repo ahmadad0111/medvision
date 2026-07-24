@@ -18,6 +18,12 @@ What makes it more than a Kaggle notebook:
 - **Inference optimization** — export to ONNX, INT8 quantization, and a benchmark reporting latency + model size across PyTorch / ONNX / INT8.
 - **Deployed** — FastAPI `/predict` endpoint + a streaming-free, dependency-light web UI at `/app`, containerized with Docker and covered by GitHub Actions CI.
 
+## Demo
+
+Upload a dermatoscopic image and get a prediction with a Grad-CAM heatmap showing the pixels that drove the decision:
+
+![MedVision demo — prediction with Grad-CAM](docs/demo.png)
+
 ## Architecture
 
 ![MedVision architecture](docs/architecture.svg)
