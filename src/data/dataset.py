@@ -57,15 +57,24 @@ def get_dataloaders():
 
 
 def compute_class_weights(train_dataset):
-    """Inverse-frequency class weights for imbalanced medical data."""
+    """Tempered inverse-frequency class weights for imbalanced medical data.
+
+    Full inverse-frequency (power=1) on a ~59x imbalance destabilises training
+    and tanks accuracy. WEIGHT_POWER=0.5 (sqrt) is a much gentler, standard
+    choice; weights are normalised to mean 1 so the loss scale stays stable.
+    """
     import torch
     labels = [int(y) for _, y in _iter_labels(train_dataset)]
     counts = [0] * Config.NUM_CLASSES
     for y in labels:
         counts[y] += 1
-    total = sum(counts)
-    weights = [total / (Config.NUM_CLASSES * c) if c else 0.0 for c in counts]
-    logger.info(f"Class counts: {counts}")
+    power = Config.WEIGHT_POWER
+    raw = [(1.0 / c) ** power if c else 0.0 for c in counts]
+    nonzero = [w for w in raw if w > 0]
+    mean_w = sum(nonzero) / len(nonzero) if nonzero else 1.0
+    weights = [w / mean_w for w in raw]
+    logger.info(f"Class counts: {counts} | weight_power={power} | "
+                f"weights={[round(w, 2) for w in weights]}")
     return torch.tensor(weights, dtype=torch.float32)
 
 

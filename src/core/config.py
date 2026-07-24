@@ -44,6 +44,7 @@ class Config:
     WEIGHT_DECAY = float(os.getenv("WEIGHT_DECAY", "1e-4"))
     NUM_WORKERS = int(os.getenv("NUM_WORKERS", "4"))
     USE_CLASS_WEIGHTS = _as_bool("USE_CLASS_WEIGHTS", True)
+    WEIGHT_POWER = float(os.getenv("WEIGHT_POWER", "0.5"))  # 0=uniform, 0.5=sqrt (gentle), 1=full inverse
     LABEL_SMOOTHING = float(os.getenv("LABEL_SMOOTHING", "0.1"))
     SEED = int(os.getenv("SEED", "42"))
 
