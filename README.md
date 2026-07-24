@@ -18,6 +18,12 @@ What makes it more than a Kaggle notebook:
 - **Inference optimization** — export to ONNX, INT8 quantization, and a benchmark reporting latency + model size across PyTorch / ONNX / INT8.
 - **Deployed** — FastAPI `/predict` endpoint + a streaming-free, dependency-light web UI at `/app`, containerized with Docker and covered by GitHub Actions CI.
 
+## Demo
+
+Upload a dermatoscopic image and get a prediction with a Grad-CAM heatmap showing the pixels that drove the decision:
+
+![MedVision demo — prediction with Grad-CAM](docs/demo.png)
+
 ## Architecture
 
 ![MedVision architecture](docs/architecture.svg)
@@ -56,22 +62,45 @@ Everything is env-driven — see `.env.example`. Highlights: `BACKBONE`
 
 ## Results
 
-Fill these in after training on your machine (the harness prints them):
+ConvNeXt-Tiny fine-tuned on DermaMNIST (7 classes, 224px, 15 epochs) — on par
+with published MedMNIST baselines.
 
-| Metric | Value |
+| Metric (test) | Value |
 |---|---|
-| Test accuracy | _run `scripts.train`_ |
-| Test macro-F1 | _…_ |
-| Test macro-AUROC | _…_ |
+| Accuracy | **0.748** |
+| Macro-F1 | 0.558 |
+| **Macro-AUROC** | **0.908** |
 
-| Engine | Latency (ms) | Size (MB) | Speedup |
+**Per-class recall**
+
+| Class | Recall |
+|---|---|
+| melanocytic nevi (benign) | 0.85 |
+| vascular lesions | 0.72 |
+| basal cell carcinoma | 0.60 |
+| actinic keratoses | 0.59 |
+| melanoma | 0.53 |
+| benign keratosis-like | 0.51 |
+| dermatofibroma | 0.39 |
+
+**Error analysis.** The dominant error is the clinically important
+melanoma↔nevi boundary: 57/223 melanomas were predicted as benign nevi
+(false negatives) and 101 nevi were over-called as melanoma. Raising
+`WEIGHT_POWER` toward 0.7 trades a little accuracy for higher melanoma recall —
+often the desirable clinical tradeoff. Full confusion matrix in
+`artifacts/test_report.json`.
+
+**Inference benchmark** (CPU, 1 image, 50 runs)
+
+| Engine | Latency (ms) | Size (MB) | vs PyTorch |
 |---|---|---|---|
-| PyTorch fp32 | _run `scripts.export`_ | | 1.00x |
-| ONNX fp32 | _…_ | | |
-| ONNX INT8 | _…_ | | |
+| PyTorch fp32 | 113.5 | 106.2 | 1.0x |
+| **ONNX fp32** | **33.4** | 106.2 | **3.4x faster** |
+| ONNX INT8 | n/a* | **26.9** | **3.9x smaller** |
 
-These are exactly the numbers for your resume bullets, e.g. *"cut inference
-latency X% and model size Y% via ONNX export + INT8 quantization."*
+\* INT8 *inference* is omitted — quantized ConvNeXt ops hard-crash ONNX Runtime
+on this CPU — but the INT8 export still yields a **3.9x smaller model**
+(106 → 27 MB). Exporting to ONNX alone cut CPU latency **3.4x** (113 → 33 ms).
 
 ## Tests
 
@@ -102,6 +131,25 @@ tests/          unit tests
 Branch-per-feature merged into `release/v1.0`: `feature/data-model` →
 `feature/training` → `feature/explainability` → `feature/onnx-benchmark`
 → `feature/api-ui` → `feature/ci-docs`.
+
+## Troubleshooting
+
+**`A module compiled using NumPy 1.x cannot be run in NumPy 2.x` / medmnist `RuntimeError: Failed to...`**
+Your PyTorch was built against NumPy 1.x but the env has NumPy 2. Fix:
+
+```bash
+pip install "numpy<2"
+```
+
+Then re-run `python -m scripts.train`.
+
+**`RuntimeError: Unknown model (convnext_tiny)`**
+Your `timm` is older than the requested backbone. Either upgrade (`pip install -U timm`) or use a backbone your version has:
+
+```bash
+set BACKBONE=resnet50   # Windows (use `export` on macOS/Linux)
+python -m scripts.train
+```
 
 ## Roadmap
 

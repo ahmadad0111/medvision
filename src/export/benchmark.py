@@ -14,6 +14,13 @@ def _file_mb(path):
     return round(os.path.getsize(path) / (1024 * 1024), 2) if os.path.exists(path) else None
 
 
+def _save(rows):
+    import json
+    os.makedirs(Config.ARTIFACT_DIR, exist_ok=True)
+    with open(os.path.join(Config.ARTIFACT_DIR, "benchmark.json"), "w") as f:
+        json.dump(rows, f, indent=2)
+
+
 def _time_callable(fn, runs=50, warmup=10):
     for _ in range(warmup):
         fn()
@@ -32,31 +39,48 @@ def benchmark(model, img_size: int = None, runs: int = 50):
     x_torch = torch.from_numpy(x_np)
 
     rows = []
+    from src.export.onnx_export import export_onnx, quantize_int8, load_onnx_session
 
     # 1) PyTorch fp32
-    model.eval()
-    with torch.no_grad():
-        rows.append({"engine": "pytorch_fp32",
-                     "latency_ms": _time_callable(lambda: model(x_torch), runs),
-                     "size_mb": _file_mb(Config.CHECKPOINT_PATH)})
+    try:
+        model.eval()
+        with torch.no_grad():
+            rows.append({"engine": "pytorch_fp32",
+                         "latency_ms": _time_callable(lambda: model(x_torch), runs),
+                         "size_mb": _file_mb(Config.CHECKPOINT_PATH)})
+        logger.info("Benchmarked pytorch_fp32"); _save(rows)
+    except Exception as exc:
+        logger.warning(f"PyTorch benchmark skipped: {exc}")
 
     # 2) ONNX fp32
-    from src.export.onnx_export import export_onnx, quantize_int8, load_onnx_session
-    export_onnx(model, img_size=img_size)
-    sess = load_onnx_session(Config.ONNX_PATH)
-    iname = sess.get_inputs()[0].name
-    rows.append({"engine": "onnx_fp32",
-                 "latency_ms": _time_callable(lambda: sess.run(None, {iname: x_np}), runs),
-                 "size_mb": _file_mb(Config.ONNX_PATH)})
+    try:
+        export_onnx(model, img_size=img_size)
+        sess = load_onnx_session(Config.ONNX_PATH)
+        iname = sess.get_inputs()[0].name
+        rows.append({"engine": "onnx_fp32",
+                     "latency_ms": _time_callable(lambda: sess.run(None, {iname: x_np}), runs),
+                     "size_mb": _file_mb(Config.ONNX_PATH)})
+        logger.info("Benchmarked onnx_fp32"); _save(rows)
+    except Exception as exc:
+        logger.warning(f"ONNX fp32 benchmark skipped: {exc}")
 
-    # 3) ONNX INT8
+    # 3) ONNX INT8 — record SIZE first (persist), then try latency separately.
+    # Quantized-op inference can hard-crash on some CPUs; the size reduction is
+    # a valid metric regardless, so we never lose it.
     try:
         quantize_int8()
-        sess8 = load_onnx_session(Config.ONNX_INT8_PATH)
-        iname8 = sess8.get_inputs()[0].name
-        rows.append({"engine": "onnx_int8",
-                     "latency_ms": _time_callable(lambda: sess8.run(None, {iname8: x_np}), runs),
-                     "size_mb": _file_mb(Config.ONNX_INT8_PATH)})
+        int8_row = {"engine": "onnx_int8", "latency_ms": None,
+                    "size_mb": _file_mb(Config.ONNX_INT8_PATH)}
+        rows.append(int8_row); _save(rows)
+        logger.info(f"Quantized INT8 size = {int8_row['size_mb']} MB")
+        try:
+            sess8 = load_onnx_session(Config.ONNX_INT8_PATH)
+            iname8 = sess8.get_inputs()[0].name
+            int8_row["latency_ms"] = _time_callable(
+                lambda: sess8.run(None, {iname8: x_np}), runs)
+            logger.info("Benchmarked onnx_int8"); _save(rows)
+        except Exception as exc:
+            logger.warning(f"INT8 latency skipped (size still recorded): {exc}")
     except Exception as exc:
         logger.warning(f"INT8 quantization skipped: {exc}")
 
@@ -65,6 +89,7 @@ def benchmark(model, img_size: int = None, runs: int = 50):
 
 
 def _report(rows):
+    import sys
     base = next((r for r in rows if r["engine"] == "pytorch_fp32"), rows[0])
     print("\n=== Inference benchmark (1 image, CPU) ===")
     print(f"{'engine':16} {'latency_ms':>12} {'size_mb':>10} {'speedup':>9}")
@@ -76,3 +101,4 @@ def _report(rows):
     with open(os.path.join(Config.ARTIFACT_DIR, "benchmark.json"), "w") as f:
         json.dump(rows, f, indent=2)
     print(f"\nSaved {Config.ARTIFACT_DIR}/benchmark.json")
+    sys.stdout.flush()

@@ -18,13 +18,12 @@ def softmax_topk(probs, k: int = 3):
 class Predictor:
     def __init__(self, checkpoint_path: str = None, device: str = None):
         from src.core.seed import resolve_device
-        from src.models.model import build_model, load_checkpoint, find_gradcam_target_layer
+        from src.models.model import build_model_from_checkpoint, find_gradcam_target_layer
         from src.explain.gradcam import GradCAM
 
         self.device = device or resolve_device(Config.DEVICE)
-        self.model = build_model(pretrained=False)
         path = checkpoint_path or Config.CHECKPOINT_PATH
-        load_checkpoint(self.model, path, device=self.device)
+        self.model, _ = build_model_from_checkpoint(path, device=self.device)
         self.model.to(self.device)
         self._target = find_gradcam_target_layer(self.model)
         self._gradcam_cls = GradCAM

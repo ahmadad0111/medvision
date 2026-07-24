@@ -1,4 +1,5 @@
 # --- core DL ---
+numpy<2            # torch wheels compiled for NumPy 1.x; avoids the NumPy 2 ABI clash
 torch
 torchvision
 timm
