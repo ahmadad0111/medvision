@@ -1,0 +1,7 @@
+# Edge inference deps (light). On JetPack, onnxruntime-gpu, numpy and pillow come
+# from the l4t-ml base image / Jetson Zoo wheels — do NOT pip-install onnxruntime
+# from PyPI on Jetson (no aarch64 GPU wheel there).
+fastapi
+uvicorn[standard]
+python-multipart
+# numpy, pillow, onnxruntime-gpu -> provided by the JetPack / l4t-ml base image

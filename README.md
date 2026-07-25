@@ -102,6 +102,17 @@ often the desirable clinical tradeoff. Full confusion matrix in
 on this CPU — but the INT8 export still yields a **3.9x smaller model**
 (106 → 27 MB). Exporting to ONNX alone cut CPU latency **3.4x** (113 → 33 ms).
 
+## Edge deployment (Jetson)
+
+The exported ONNX/INT8 model runs on an **NVIDIA Jetson** with no PyTorch on the device — a lightweight ONNX Runtime (or TensorRT) inference server. Train and export on a workstation, then deploy a small image to the edge:
+
+```bash
+docker build -f deploy/jetson/Dockerfile -t medvision-edge .
+docker run --runtime nvidia -p 8000:8000 medvision-edge   # http://<jetson-ip>:8000/app
+```
+
+See [`deploy/jetson/README.md`](deploy/jetson/README.md) for the TensorRT path and benchmarks. (Edge path serves prediction + probabilities; Grad-CAM stays on the full server.)
+
 ## Tests
 
 ```bash
@@ -122,6 +133,7 @@ src/
   export/       ONNX export, INT8 quantization, latency benchmark
   api/          FastAPI app, routes (health, predict), schemas, DI
 scripts/        train.py, export.py, push_all_branches.sh
+deploy/jetson/  edge inference (ONNX Runtime / TensorRT) for Jetson
 frontend/       upload UI with probability bars + heatmap
 tests/          unit tests
 ```
