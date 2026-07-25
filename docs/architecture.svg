@@ -1,77 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" font-family="Segoe UI, Inter, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 516" font-family="'Segoe UI', Inter, Helvetica, Arial, sans-serif">
   <defs>
-    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L7,3 L0,6 Z" fill="#5b7099"/>
-    </marker>
-    <marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L7,3 L0,6 Z" fill="#2f8f56"/>
-    </marker>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6.5,3 L0,6 Z" fill="#94a3b8"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6.5,3 L0,6 Z" fill="#34d399"/></marker>
+    <marker id="ab" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6.5,3 L0,6 Z" fill="#60a5fa"/></marker>
   </defs>
-  <rect x="0" y="0" width="1120" height="640" rx="18" fill="#0b1120"/>
-  <text x="40" y="46" fill="#e8eefc" font-size="24" font-weight="700">MedVision — Explainable Skin-Lesion Classifier</text>
-  <text x="40" y="70" fill="#8b9ac0" font-size="13">DermaMNIST · timm backbone · Grad-CAM explanations · ONNX-optimized, latency-benchmarked inference</text>
+  <rect x="0" y="0" width="1120" height="516" fill="#ffffff"/>
+  <text x="40" y="46" fill="#0f172a" font-size="23" font-weight="600">MedVision — Explainable Skin-Lesion Classifier</text>
+  <text x="40" y="69" fill="#64748b" font-size="13">DermaMNIST · timm backbone · Grad-CAM explanations · ONNX-optimized, latency-benchmarked inference</text>
 
-  <!-- TRAINING LANE -->
-  <text x="40" y="106" fill="#68e1fd" font-size="12" font-weight="700" letter-spacing="1.5">1 · TRAINING  (offline)</text>
-  <g font-size="13" fill="#e8eefc" text-anchor="middle">
-    <rect x="40"  y="118" width="150" height="56" rx="10" fill="#111a2e" stroke="#1e2b45"/>
-    <text x="115" y="142">DermaMNIST</text><text x="115" y="159" font-size="11" fill="#8b9ac0">7 skin-lesion classes</text>
-    <rect x="222" y="118" width="130" height="56" rx="10" fill="#111a2e" stroke="#1e2b45"/>
-    <text x="287" y="142">Augment +</text><text x="287" y="159">normalize</text>
-    <rect x="384" y="112" width="168" height="68" rx="10" fill="#1a1633" stroke="#7c5cff"/>
-    <text x="468" y="137" fill="#c9bcff" font-weight="700">timm backbone</text><text x="468" y="156" font-size="11.5" fill="#a99cf0">ConvNeXt / ViT (pretrained)</text>
-    <rect x="584" y="118" width="150" height="56" rx="10" fill="#111a2e" stroke="#1e2b45"/>
-    <text x="659" y="139">Train</text><text x="659" y="157" font-size="11" fill="#8b9ac0">weighted loss · AUROC</text>
-    <rect x="766" y="114" width="150" height="64" rx="10" fill="#12203a" stroke="#2b6cb0"/>
-    <text x="841" y="139" fill="#9fc3ff" font-weight="700">Checkpoint</text><text x="841" y="157" font-size="11" fill="#9fc3ff">best val AUROC</text>
+  <!-- TRAINING panel -->
+  <rect x="28" y="86" width="1064" height="96" rx="14" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="46" y="108" fill="#2563eb" font-size="11" font-weight="700" letter-spacing="1.2">TRAINING · OFFLINE</text>
+  <g font-size="12.5" text-anchor="middle">
+    <rect x="46"  y="120" width="150" height="50" rx="9" fill="#eff6ff" stroke="#60a5fa"/><text x="121" y="141" fill="#1e40af">DermaMNIST</text><text x="121" y="158" fill="#2563eb" font-size="10.5">7 skin-lesion classes</text>
+    <rect x="228" y="120" width="128" height="50" rx="9" fill="#ffffff" stroke="#cbd5e1"/><text x="292" y="141" fill="#334155">Augment +</text><text x="292" y="158" fill="#334155">normalize</text>
+    <rect x="388" y="118" width="166" height="54" rx="9" fill="#f5f3ff" stroke="#8b5cf6"/><text x="471" y="140" fill="#6d28d9" font-weight="600">timm backbone</text><text x="471" y="157" fill="#7c3aed" font-size="10.5">ConvNeXt / ViT</text>
+    <rect x="586" y="120" width="150" height="50" rx="9" fill="#ffffff" stroke="#cbd5e1"/><text x="661" y="141" fill="#334155">Train</text><text x="661" y="158" fill="#64748b" font-size="10.5">weighted loss · AUROC</text>
+    <rect x="768" y="118" width="150" height="54" rx="9" fill="#eff6ff" stroke="#3b82f6"/><text x="843" y="140" fill="#1e40af" font-weight="600">Checkpoint</text><text x="843" y="157" fill="#2563eb" font-size="10.5">best val AUROC</text>
   </g>
-  <g stroke="#5b7099" stroke-width="1.6" marker-end="url(#ar)" fill="none">
-    <path d="M190,146 L220,146"/><path d="M352,146 L382,146"/>
-    <path d="M552,146 L582,146"/><path d="M734,146 L764,146"/>
+  <g stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#a)">
+    <path d="M196,145 L226,145"/><path d="M356,145 L386,145"/><path d="M554,145 L584,145"/><path d="M736,145 L766,145"/>
   </g>
 
-  <!-- EXPORT branch -->
-  <text x="40" y="232" fill="#22c55e" font-size="12" font-weight="700" letter-spacing="1.5">2 · OPTIMIZE</text>
-  <g font-size="12.5" fill="#e8eefc" text-anchor="middle">
-    <rect x="766" y="212" width="150" height="48" rx="9" fill="#12261c" stroke="#2f8f56"/>
-    <text x="841" y="241" fill="#a7e8c0">Export → ONNX</text>
-    <rect x="766" y="278" width="150" height="48" rx="9" fill="#12261c" stroke="#2f8f56"/>
-    <text x="841" y="307" fill="#a7e8c0">INT8 quantize</text>
-    <rect x="586" y="245" width="150" height="48" rx="9" fill="#111a2e" stroke="#2f8f56"/>
-    <text x="661" y="266" fill="#a7e8c0">Benchmark</text><text x="661" y="282" font-size="10.5" fill="#7fcf9f">latency · size</text>
+  <!-- OPTIMIZE panel -->
+  <rect x="28" y="200" width="1064" height="132" rx="14" fill="#f6fbf8" stroke="#dcf2e7"/>
+  <text x="46" y="223" fill="#059669" font-size="11" font-weight="700" letter-spacing="1.2">OPTIMIZE</text>
+  <g font-size="12.5" text-anchor="middle">
+    <rect x="768" y="236" width="150" height="42" rx="8" fill="#ecfdf5" stroke="#34d399"/><text x="843" y="262" fill="#047857">Export → ONNX</text>
+    <rect x="768" y="290" width="150" height="42" rx="8" fill="#ecfdf5" stroke="#34d399"/><text x="843" y="316" fill="#047857">INT8 quantize</text>
+    <rect x="586" y="263" width="150" height="42" rx="8" fill="#ffffff" stroke="#34d399"/><text x="661" y="281" fill="#047857">Benchmark</text><text x="661" y="296" fill="#059669" font-size="10">latency · size</text>
   </g>
-  <g stroke="#2f8f56" stroke-width="1.6" marker-end="url(#arg)" fill="none">
-    <path d="M841,178 L841,210"/><path d="M841,260 L841,276"/>
-    <path d="M766,302 C700,302 736,270 735,269"/>
+  <g stroke="#34d399" stroke-width="1.5" fill="none" marker-end="url(#ag)">
+    <path d="M843,172 L843,234"/><path d="M843,278 L843,288"/><path d="M766,311 L738,300"/>
   </g>
 
-  <line x1="40" y1="352" x2="1080" y2="352" stroke="#1e2b45"/>
+  <line x1="40" y1="356" x2="1080" y2="356" stroke="#e2e8f0"/>
 
-  <!-- SERVING LANE -->
-  <text x="40" y="384" fill="#7c5cff" font-size="12" font-weight="700" letter-spacing="1.5">3 · SERVING  (FastAPI /app)</text>
-  <g font-size="13" fill="#e8eefc" text-anchor="middle">
-    <rect x="40"  y="398" width="150" height="56" rx="10" fill="#111a2e" stroke="#1e2b45"/>
-    <text x="115" y="422">Upload image</text><text x="115" y="440" font-size="11" fill="#8b9ac0">dermatoscopy</text>
-    <rect x="222" y="398" width="140" height="56" rx="10" fill="#111a2e" stroke="#1e2b45"/>
-    <text x="292" y="422">Preprocess</text><text x="292" y="440" font-size="11" fill="#8b9ac0">resize · norm</text>
-    <rect x="394" y="392" width="160" height="68" rx="10" fill="#1a1633" stroke="#7c5cff"/>
-    <text x="474" y="417" fill="#c9bcff" font-weight="700">Model</text><text x="474" y="435" font-size="11" fill="#a99cf0">forward + Grad-CAM</text>
+  <!-- SERVING panel -->
+  <rect x="28" y="372" width="1064" height="124" rx="14" fill="#fafaff" stroke="#ececfb"/>
+  <text x="46" y="395" fill="#7c3aed" font-size="11" font-weight="700" letter-spacing="1.2">SERVING · FastAPI /app</text>
+  <g font-size="12.5" text-anchor="middle">
+    <rect x="46"  y="408" width="150" height="50" rx="9" fill="#ffffff" stroke="#cbd5e1"/><text x="121" y="429" fill="#334155">Upload image</text><text x="121" y="446" fill="#64748b" font-size="10.5">dermatoscopy</text>
+    <rect x="228" y="408" width="140" height="50" rx="9" fill="#ffffff" stroke="#cbd5e1"/><text x="298" y="429" fill="#334155">Preprocess</text><text x="298" y="446" fill="#64748b" font-size="10.5">resize · normalize</text>
+    <rect x="400" y="406" width="158" height="54" rx="9" fill="#f5f3ff" stroke="#8b5cf6"/><text x="479" y="428" fill="#6d28d9" font-weight="600">Model</text><text x="479" y="445" fill="#7c3aed" font-size="10.5">forward + Grad-CAM</text>
+    <rect x="620" y="404" width="200" height="30" rx="8" fill="#eff6ff" stroke="#60a5fa"/><text x="720" y="424" fill="#1e40af" font-size="12">Prediction + top-k probs</text>
+    <rect x="620" y="442" width="200" height="30" rx="8" fill="#ecfdf5" stroke="#34d399"/><text x="720" y="462" fill="#047857" font-size="12">Grad-CAM heatmap overlay</text>
   </g>
-  <g stroke="#5b7099" stroke-width="1.6" marker-end="url(#ar)" fill="none">
-    <path d="M190,426 L220,426"/><path d="M362,426 L392,426"/>
+  <g stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#a)">
+    <path d="M196,433 L226,433"/><path d="M368,433 L398,433"/><path d="M558,428 L618,420"/><path d="M558,438 L618,455"/>
   </g>
-  <!-- checkpoint feeds serving model -->
-  <path d="M841,178 C841,330 474,300 474,390" stroke="#2b6cb0" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#ar)" fill="none"/>
-  <text x="560" y="330" fill="#6f86ad" font-size="10.5">trained weights</text>
-
-  <!-- outputs -->
-  <g font-size="13" fill="#e8eefc" text-anchor="middle">
-    <rect x="620" y="392" width="200" height="30" rx="8" fill="#111a2e" stroke="#5b8cff"/>
-    <text x="720" y="412" fill="#9fc3ff">Prediction + top-k probs</text>
-    <rect x="620" y="430" width="200" height="30" rx="8" fill="#12261c" stroke="#2f8f56"/>
-    <text x="720" y="450" fill="#a7e8c0">Grad-CAM heatmap overlay</text>
-  </g>
-  <g stroke="#5b7099" stroke-width="1.6" marker-end="url(#ar)" fill="none">
-    <path d="M554,420 L618,407"/><path d="M554,432 L618,443"/>
-  </g>
+  <path d="M843,172 C843,330 479,320 479,404" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 4" fill="none" marker-end="url(#ab)"/>
+  <text x="560" y="392" fill="#94a3b8" font-size="10.5">trained weights</text>
 </svg>
